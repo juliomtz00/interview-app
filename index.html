@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Interview Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --accent: #e8d5a3;
+    --accent2: #c4a882;
+    --text: #f0ece4;
+    --text-dim: #7a756c;
+    --text-dimmer: #3d3933;
+    --danger: #e05c5c;
+    --success: #6bbd8e;
+    --recording: #e05c5c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; min-height: 100vh; padding: 24px 20px; }
+  .screen.active { display: flex; }
+
+  /* ── SETUP SCREEN ── */
+  #screen-setup {
+    justify-content: center;
+    gap: 32px;
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .setup-title {
+    font-family: 'Fraunces', serif;
+    font-size: 36px;
+    font-weight: 300;
+    line-height: 1.15;
+    color: var(--text);
+  }
+
+  .setup-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .field-label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .field-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field-input:focus { border-color: var(--accent2); }
+  .field-input::placeholder { color: var(--text-dimmer); }
+
+  .field-input[type="password"] { letter-spacing: 0.1em; }
+
+  .lang-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+
+  .lang-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .lang-btn.selected {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--bg);
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    border-radius: 12px;
+    padding: 18px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 8px;
+  }
+
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-primary:active { transform: scale(0.98); }
+
+  .api-note {
+    font-size: 11px;
+    color: var(--text-dimmer);
+    line-height: 1.6;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: 8px;
+    border-left: 2px solid var(--text-dimmer);
+  }
+
+  /* ── INTRO SCREEN ── */
+  #screen-intro {
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .intro-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .step-indicator {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  .intro-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .intro-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .intro-text {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .intro-subtext {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.7;
+    margin-top: 4px;
+  }
+
+  .meta-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .meta-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .meta-chip strong { color: var(--text); }
+
+  /* ── QUESTION SCREEN ── */
+  #screen-question {
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .q-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .q-number {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+  }
+
+  .progress-bar {
+    height: 2px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .question-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .q-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 300;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .transcript-area {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    min-height: 80px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .transcript-placeholder {
+    color: var(--text-dimmer);
+    font-style: italic;
+  }
+
+  .transcript-edit {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    resize: none;
+    min-height: 80px;
+  }
+
+  .status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+    min-height: 20px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--text-dimmer);
+    flex-shrink: 0;
+  }
+
+  .status-dot.recording {
+    background: var(--recording);
+    animation: pulse 1s infinite;
+  }
+
+  .status-dot.processing {
+    background: var(--accent);
+    animation: spin-dot 1s linear infinite;
+  }
+
+  .status-dot.done { background: var(--success); }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  @keyframes spin-dot {
+    0% { opacity: 1; }
+    50% { opacity: 0.3; }
+    100% { opacity: 1; }
+  }
+
+  .btn-record {
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 22px;
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-record.idle {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .btn-record.recording {
+    background: var(--recording);
+    color: #fff;
+    animation: recording-glow 1.5s ease infinite;
+  }
+
+  .btn-record.processing {
+    background: var(--surface2);
+    color: var(--text-dim);
+    cursor: default;
+  }
+
+  @keyframes recording-glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(224, 92, 92, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(224, 92, 92, 0.15); }
+  }
+
+  .btn-record:active:not(.processing) { transform: scale(0.97); }
+
+  .action-row {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-secondary {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent2); color: var(--text); }
+  .btn-secondary.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+  .btn-next {
+    flex: 2;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .btn-next:hover { border-color: var(--accent); background: rgba(232, 213, 163, 0.05); }
+  .btn-next:active { transform: scale(0.98); }
+
+  /* ── SUMMARY SCREEN ── */
+  #screen-summary {
+    gap: 20px;
+  }
+
+  .summary-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .summary-title {
+    font-family: 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 300;
+  }
+
+  .summary-meta {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .summary-scroll {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-right: 4px;
+  }
+
+  .summary-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .summary-q {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+
+  .summary-q-text {
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+
+  .summary-answer {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .summary-empty {
+    color: var(--text-dimmer);
+    font-style: italic;
+  }
+
+  .export-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-export {
+    width: 100%;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.03em;
+  }
+
+  .btn-export.primary { background: var(--accent); color: var(--bg); }
+  .btn-export.secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn-export:active { transform: scale(0.98); }
+
+  .copy-confirm {
+    text-align: center;
+    font-size: 11px;
+    color: var(--success);
+    height: 16px;
+    transition: opacity 0.3s;
+  }
+
+  .btn-new {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-new:hover { color: var(--text); border-color: var(--text-dimmer); }
+
+  /* ── TIMER ── */
+  .timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    color: var(--recording);
+    letter-spacing: 0.05em;
+  }
+
+  /* ── SETTINGS FAB ── */
+  .fab-settings {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 100;
+    transition: all 0.15s;
+  }
+
+  .fab-settings:hover { border-color: var(--accent2); }
+
+  /* ── ERROR TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 20px;
+    right: 20px;
+    background: var(--danger);
+    color: #fff;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    z-index: 999;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN: SETUP                                       -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen active" id="screen-setup">
+  <div class="logo">Field Interview Tool</div>
+  <div>
+    <div class="setup-title">Ready to<br><em>listen.</em></div>
+  </div>
+
+  <div>
+    <div class="field-label">OpenAI API Key</div>
+    <input type="password" class="field-input" id="api-key-input"
+      placeholder="sk-..." autocomplete="off" spellcheck="false">
+    <div class="api-note" style="margin-top:10px">
+      Your key is stored only in this browser. Never sent anywhere except OpenAI's Whisper API for transcription. Get yours at platform.openai.com/api-keys
+    </div>
+  </div>
+
+  <div>
+    <div class="field-label">Language</div>
+    <div class="lang-row">
+      <button class="lang-btn selected" data-lang="en" onclick="selectLang('en')">🇬🇧 English</button>
+      <button class="lang-btn" data-lang="de" onclick="selectLang('de')">🇩🇪 Deutsch</button>
+      <button class="lang-btn" data-lang="es" onclick="selectLang('es')">🇲🇽 Español</button>
+    </div>
+  </div>
+
+  <button class="btn-primary" onclick="goToIntro()">Start Interview →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN: INTRO (shown to interviewee)               -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-intro">
+  <div class="intro-header">
+    <div class="logo" id="intro-logo">Field Interview Tool</div>
+    <div class="step-indicator" id="intro-step">6 questions · ~10 min</div>
+  </div>
+
+  <div class="intro-card">
+    <div class="intro-label" id="intro-label">About this</div>
+    <div class="intro-text" id="intro-text">
+      I'm researching what happens when public transit fails people. No right or wrong answers — just tell me what actually happened to you.
+    </div>
+    <div class="intro-subtext" id="intro-subtext">
+      Your answers will be recorded and transcribed. This is research only — I'm not selling anything.
+    </div>
+  </div>
+
+  <div>
+    <div class="field-label" id="label-name">Person's name or code (optional)</div>
+    <input type="text" class="field-input" id="person-name" placeholder="e.g. P01 or Maria">
+  </div>
+
+  <div>
+    <div class="field-label" id="label-location">Location</div>
+    <input type="text" class="field-input" id="person-location" placeholder="e.g. Hannover Hbf">
+  </div>
+
+  <button class="btn-primary" id="btn-begin" onclick="beginInterview()">Begin →</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN: QUESTION                                   -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-question">
+  <div class="q-header">
+    <div class="q-number" id="q-number">Q1 / 6</div>
+    <div class="timer" id="timer" style="display:none">0:00</div>
+  </div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-label" id="q-label">Question</div>
+    <div class="q-text" id="q-text">Question text here</div>
+
+    <div>
+      <div class="field-label" id="label-transcript">Transcript</div>
+      <div class="transcript-area">
+        <textarea class="transcript-edit" id="transcript-edit"
+          placeholder="Transcript will appear here after recording. You can also type directly." rows="4"></textarea>
+      </div>
+    </div>
+
+    <div class="status-row">
+      <div class="status-dot" id="status-dot"></div>
+      <span id="status-text">Ready to record</span>
+    </div>
+  </div>
+
+  <button class="btn-record idle" id="btn-record" onclick="toggleRecording()">
+    <span id="btn-record-icon">⏺</span>
+    <span id="btn-record-label">Hold to Record</span>
+  </button>
+
+  <div class="action-row">
+    <button class="btn-secondary danger" onclick="clearTranscript()">Clear</button>
+    <button class="btn-secondary" onclick="skipQuestion()" id="btn-skip">Skip</button>
+    <button class="btn-next" onclick="nextQuestion()" id="btn-next">Next →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SCREEN: SUMMARY                                    -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="screen" id="screen-summary">
+  <div class="summary-header">
+    <div class="summary-title" id="summary-title">Interview complete</div>
+    <div class="summary-meta" id="summary-meta"></div>
+  </div>
+
+  <div class="summary-scroll" id="summary-scroll"></div>
+
+  <div class="export-row">
+    <button class="btn-export primary" onclick="downloadTranscript()">⬇ Download .txt file</button>
+    <button class="btn-export secondary" onclick="copyToClipboard()">⎘ Copy to clipboard</button>
+    <div class="copy-confirm" id="copy-confirm"></div>
+    <button class="btn-new" onclick="newInterview()">+ New interview</button>
+  </div>
+</div>
+
+<!-- Settings FAB -->
+<div class="fab-settings" id="fab-settings" onclick="goToSetup()" style="display:none" title="Settings">⚙</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let currentLang = 'en';
+let currentQ = 0;
+let answers = [];
+let mediaRecorder = null;
+let audioChunks = [];
+let isRecording = false;
+let timerInterval = null;
+let timerSeconds = 0;
+let personName = '';
+let personLocation = '';
+let interviewDate = '';
+
+// ═══════════════════════════════════════════════════════
+// QUESTIONS — trilingual
+// ═══════════════════════════════════════════════════════
+const QUESTIONS = [
+  {
+    label: { en:"The event", de:"Das Erlebnis", es:"El evento" },
+    text: {
+      en: "Think of the last time public transit seriously let you down — a delay, cancellation, or something that forced you to change your plans. Where were you going, and what happened?",
+      de: "Denk an das letzte Mal, als öffentliche Verkehrsmittel dich wirklich im Stich gelassen haben — eine Verspätung, ein Ausfall, etwas das deine Pläne ruiniert hat. Wo wolltest du hin, und was ist passiert?",
+      es: "Piensa en la última vez que el transporte público te falló en serio — un retraso, cancelación, o algo que te obligó a cambiar tus planes. ¿A dónde ibas y qué pasó?"
+    }
+  },
+  {
+    label: { en:"The stakes", de:"Was auf dem Spiel stand", es:"Lo que estaba en riesgo" },
+    text: {
+      en: "What was at risk because of that disruption? What would have happened if you hadn't found a solution?",
+      de: "Was stand auf dem Spiel? Was wäre passiert, wenn du keine Lösung gefunden hättest?",
+      es: "¿Qué estaba en riesgo por esa falla? ¿Qué hubiera pasado si no hubieras encontrado una solución?"
+    }
+  },
+  {
+    label: { en:"The struggle", de:"Der Kampf", es:"El esfuerzo" },
+    text: {
+      en: "Walk me through exactly what you did to try to solve it. What did you try first — and then what?",
+      de: "Beschreib mir genau, was du versucht hast, um das Problem zu lösen. Was hast du zuerst gemacht — und dann?",
+      es: "Cuéntame exactamente qué hiciste para intentar resolverlo. ¿Qué intentaste primero — y luego qué?"
+    }
+  },
+  {
+    label: { en:"The friction", de:"Das Frustrierende", es:"La fricción" },
+    text: {
+      en: "What was the most frustrating part — not the disruption itself, but what made the situation harder than it needed to be?",
+      de: "Was war der frustrierendste Teil — nicht der Ausfall selbst, sondern was hat die Situation unnötig schwerer gemacht?",
+      es: "¿Cuál fue la parte más frustrante — no el problema en sí, sino qué hizo que la situación fuera más difícil de lo necesario?"
+    }
+  },
+  {
+    label: { en:"The resolution", de:"Die Lösung", es:"La resolución" },
+    text: {
+      en: "What did you end up doing? How did it resolve — did you get where you needed to go?",
+      de: "Was hast du am Ende gemacht? Wie hat es sich gelöst — bist du noch angekommen?",
+      es: "¿Qué terminaste haciendo? ¿Cómo se resolvió — llegaste a donde necesitabas ir?"
+    }
+  },
+  {
+    label: { en:"The ideal", de:"Das Ideale", es:"Lo ideal" },
+    text: {
+      en: "If you could have had anything in that moment — information, a person, a tool, anything at all — what would have made the biggest difference?",
+      de: "Wenn du in diesem Moment irgendetwas haben könntest — eine Information, eine Person, ein Tool — was hätte den größten Unterschied gemacht?",
+      es: "Si pudieras haber tenido cualquier cosa en ese momento — información, una persona, una herramienta — ¿qué hubiera marcado la mayor diferencia?"
+    }
+  }
+];
+
+const UI_TEXT = {
+  en: {
+    introLabel: "About this",
+    introText: "I'm researching what happens when public transit fails people. No right or wrong answers — just tell me what actually happened to you.",
+    introSubtext: "Your answers will be recorded and transcribed. This is research only — I'm not selling anything.",
+    introStep: "6 questions · ~10 min",
+    labelName: "Person's name or code (optional)",
+    labelLocation: "Location",
+    btnBegin: "Begin →",
+    labelTranscript: "Transcript — edit if needed",
+    statusReady: "Ready to record",
+    statusRecording: "Recording...",
+    statusProcessing: "Transcribing...",
+    statusDone: "Done — edit if needed",
+    btnRecordStart: "Tap to Record",
+    btnRecordStop: "Tap to Stop",
+    btnRecordProcessing: "Transcribing...",
+    btnSkip: "Skip",
+    btnNext: "Next →",
+    btnFinish: "Finish →",
+    btnClear: "Clear",
+    summaryTitle: "Interview complete",
+    skipped: "(skipped)",
+    noAnswer: "(no answer recorded)",
+  },
+  de: {
+    introLabel: "Darum geht es",
+    introText: "Ich forsche darüber, was passiert, wenn der öffentliche Verkehr versagt. Keine richtigen oder falschen Antworten — erzähl mir einfach, was wirklich passiert ist.",
+    introSubtext: "Deine Antworten werden aufgenommen und transkribiert. Das ist nur Forschung — ich verkaufe nichts.",
+    introStep: "6 Fragen · ~10 Min",
+    labelName: "Name oder Code (optional)",
+    labelLocation: "Ort",
+    btnBegin: "Beginnen →",
+    labelTranscript: "Transkript — bei Bedarf bearbeiten",
+    statusReady: "Bereit zur Aufnahme",
+    statusRecording: "Aufnahme läuft...",
+    statusProcessing: "Transkription...",
+    statusDone: "Fertig — bei Bedarf bearbeiten",
+    btnRecordStart: "Tippen zum Aufnehmen",
+    btnRecordStop: "Tippen zum Stoppen",
+    btnRecordProcessing: "Transkription...",
+    btnSkip: "Überspringen",
+    btnNext: "Weiter →",
+    btnFinish: "Fertigstellen →",
+    btnClear: "Löschen",
+    summaryTitle: "Interview abgeschlossen",
+    skipped: "(übersprungen)",
+    noAnswer: "(keine Antwort aufgenommen)",
+  },
+  es: {
+    introLabel: "De qué se trata",
+    introText: "Estoy investigando qué pasa cuando el transporte público falla. No hay respuestas correctas o incorrectas — solo cuéntame qué te pasó a ti.",
+    introSubtext: "Tus respuestas serán grabadas y transcritas. Esto es solo investigación — no estoy vendiendo nada.",
+    introStep: "6 preguntas · ~10 min",
+    labelName: "Nombre o código (opcional)",
+    labelLocation: "Lugar",
+    btnBegin: "Comenzar →",
+    labelTranscript: "Transcripción — edita si es necesario",
+    statusReady: "Listo para grabar",
+    statusRecording: "Grabando...",
+    statusProcessing: "Transcribiendo...",
+    statusDone: "Listo — edita si es necesario",
+    btnRecordStart: "Toca para Grabar",
+    btnRecordStop: "Toca para Detener",
+    btnRecordProcessing: "Transcribiendo...",
+    btnSkip: "Omitir",
+    btnNext: "Siguiente →",
+    btnFinish: "Finalizar →",
+    btnClear: "Borrar",
+    summaryTitle: "Entrevista completa",
+    skipped: "(omitida)",
+    noAnswer: "(sin respuesta grabada)",
+  }
+};
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('jtbd_api_key');
+  if (saved) document.getElementById('api-key-input').value = saved;
+  const savedLang = localStorage.getItem('jtbd_lang');
+  if (savedLang) selectLang(savedLang);
+  answers = new Array(QUESTIONS.length).fill('');
+});
+
+// ═══════════════════════════════════════════════════════
+// LANG
+// ═══════════════════════════════════════════════════════
+function selectLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('jtbd_lang', lang);
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('selected', b.dataset.lang === lang);
+  });
+}
+
+function t(key) { return UI_TEXT[currentLang][key] || UI_TEXT['en'][key]; }
+
+// ═══════════════════════════════════════════════════════
+// SCREEN NAV
+// ═══════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const fab = document.getElementById('fab-settings');
+  fab.style.display = id === 'screen-setup' ? 'none' : 'flex';
+}
+
+function goToSetup() {
+  if (confirm('Go back to settings? Current interview will be lost.')) {
+    resetInterview();
+    showScreen('screen-setup');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// SETUP → INTRO
+// ═══════════════════════════════════════════════════════
+function goToIntro() {
+  const key = document.getElementById('api-key-input').value.trim();
+  if (!key || !key.startsWith('sk-')) {
+    showToast('Please enter a valid OpenAI API key (starts with sk-)');
+    return;
+  }
+  localStorage.setItem('jtbd_api_key', key);
+
+  const ui = UI_TEXT[currentLang];
+  document.getElementById('intro-label').textContent = ui.introLabel;
+  document.getElementById('intro-text').textContent = ui.introText;
+  document.getElementById('intro-subtext').textContent = ui.introSubtext;
+  document.getElementById('intro-step').textContent = ui.introStep;
+  document.getElementById('label-name').textContent = ui.labelName;
+  document.getElementById('label-location').textContent = ui.labelLocation;
+  document.getElementById('btn-begin').textContent = ui.btnBegin;
+  document.getElementById('person-name').value = '';
+  document.getElementById('person-location').value = '';
+
+  showScreen('screen-intro');
+}
+
+// ═══════════════════════════════════════════════════════
+// BEGIN INTERVIEW
+// ═══════════════════════════════════════════════════════
+function beginInterview() {
+  personName = document.getElementById('person-name').value.trim() || 'Anonymous';
+  personLocation = document.getElementById('person-location').value.trim() || 'Unknown location';
+  interviewDate = new Date().toLocaleString();
+  currentQ = 0;
+  answers = new Array(QUESTIONS.length).fill('');
+  renderQuestion();
+  showScreen('screen-question');
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER QUESTION
+// ═══════════════════════════════════════════════════════
+function renderQuestion() {
+  const q = QUESTIONS[currentQ];
+  const ui = UI_TEXT[currentLang];
+  const total = QUESTIONS.length;
+
+  document.getElementById('q-number').textContent = `Q${currentQ + 1} / ${total}`;
+  document.getElementById('progress-fill').style.width = `${((currentQ) / total) * 100}%`;
+  document.getElementById('q-label').textContent = q.label[currentLang] || q.label.en;
+  document.getElementById('q-text').textContent = q.text[currentLang] || q.text.en;
+  document.getElementById('label-transcript').textContent = ui.labelTranscript;
+
+  const ta = document.getElementById('transcript-edit');
+  ta.value = answers[currentQ] || '';
+  ta.placeholder = currentLang === 'de'
+    ? 'Transkript erscheint hier nach der Aufnahme. Du kannst auch direkt tippen.'
+    : currentLang === 'es'
+    ? 'La transcripción aparece aquí después de grabar. También puedes escribir directamente.'
+    : 'Transcript will appear here after recording. You can also type directly.';
+
+  setStatus('ready');
+  document.getElementById('btn-next').textContent =
+    currentQ === total - 1 ? ui.btnFinish : ui.btnNext;
+  document.getElementById('btn-skip').textContent = ui.btnSkip;
+
+  stopTimer();
+}
+
+// ═══════════════════════════════════════════════════════
+// STATUS
+// ═══════════════════════════════════════════════════════
+function setStatus(state) {
+  const dot = document.getElementById('status-dot');
+  const txt = document.getElementById('status-text');
+  const btn = document.getElementById('btn-record');
+  const btnIcon = document.getElementById('btn-record-icon');
+  const btnLabel = document.getElementById('btn-record-label');
+  const ui = UI_TEXT[currentLang];
+
+  dot.className = 'status-dot';
+  btn.className = 'btn-record';
+
+  if (state === 'ready') {
+    txt.textContent = ui.statusReady;
+    btn.classList.add('idle');
+    btnIcon.textContent = '⏺';
+    btnLabel.textContent = ui.btnRecordStart;
+    btn.disabled = false;
+  } else if (state === 'recording') {
+    dot.classList.add('recording');
+    txt.textContent = ui.statusRecording;
+    btn.classList.add('recording');
+    btnIcon.textContent = '⏹';
+    btnLabel.textContent = ui.btnRecordStop;
+    btn.disabled = false;
+  } else if (state === 'processing') {
+    dot.classList.add('processing');
+    txt.textContent = ui.statusProcessing;
+    btn.classList.add('processing');
+    btnIcon.textContent = '◌';
+    btnLabel.textContent = ui.btnRecordProcessing;
+    btn.disabled = true;
+  } else if (state === 'done') {
+    dot.classList.add('done');
+    txt.textContent = ui.statusDone;
+    btn.classList.add('idle');
+    btnIcon.textContent = '⏺';
+    btnLabel.textContent = ui.btnRecordStart;
+    btn.disabled = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// RECORDING
+// ═══════════════════════════════════════════════════════
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    // Pick best supported format
+    const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg', 'audio/mp4']
+      .find(m => MediaRecorder.isTypeSupported(m)) || '';
+
+    mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : {});
+    audioChunks = [];
+
+    mediaRecorder.ondataavailable = e => {
+      if (e.data.size > 0) audioChunks.push(e.data);
+    };
+
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      setStatus('processing');
+      stopTimer();
+      await transcribeAudio();
+    };
+
+    mediaRecorder.start(250);
+    isRecording = true;
+    setStatus('recording');
+    startTimer();
+  } catch (err) {
+    showToast('Microphone access denied. Please allow microphone in your browser settings.');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    isRecording = false;
+    mediaRecorder.stop();
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// WHISPER API
+// ═══════════════════════════════════════════════════════
+async function transcribeAudio() {
+  const apiKey = localStorage.getItem('jtbd_api_key');
+  if (!apiKey) {
+    showToast('No API key found. Go to settings.');
+    setStatus('ready');
+    return;
+  }
+
+  try {
+    const mimeType = audioChunks[0]?.type || 'audio/webm';
+    const ext = mimeType.includes('ogg') ? 'ogg' : mimeType.includes('mp4') ? 'mp4' : 'webm';
+    const blob = new Blob(audioChunks, { type: mimeType });
+    const file = new File([blob], `recording.${ext}`, { type: mimeType });
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model', 'whisper-1');
+
+    // Language hint for better accuracy
+    const langMap = { en: 'en', de: 'de', es: 'es' };
+    formData.append('language', langMap[currentLang] || 'en');
+
+    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `HTTP ${response.status}`);
+    }
+
+    const data = await response.json();
+    const transcript = data.text?.trim() || '';
+
+    // Append to existing (don't overwrite — they may have typed something)
+    const ta = document.getElementById('transcript-edit');
+    const existing = ta.value.trim();
+    ta.value = existing ? existing + '\n' + transcript : transcript;
+    answers[currentQ] = ta.value;
+
+    setStatus('done');
+  } catch (err) {
+    showToast(`Transcription failed: ${err.message}`);
+    setStatus('ready');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+function nextQuestion() {
+  // Save current answer
+  answers[currentQ] = document.getElementById('transcript-edit').value.trim();
+
+  if (isRecording) stopRecording();
+
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showSummary();
+  }
+}
+
+function skipQuestion() {
+  answers[currentQ] = '';
+  if (isRecording) stopRecording();
+
+  if (currentQ < QUESTIONS.length - 1) {
+    currentQ++;
+    renderQuestion();
+  } else {
+    showSummary();
+  }
+}
+
+function clearTranscript() {
+  document.getElementById('transcript-edit').value = '';
+  answers[currentQ] = '';
+  setStatus('ready');
+}
+
+// ═══════════════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════════════
+function startTimer() {
+  timerSeconds = 0;
+  const el = document.getElementById('timer');
+  el.style.display = 'block';
+  timerInterval = setInterval(() => {
+    timerSeconds++;
+    const m = Math.floor(timerSeconds / 60);
+    const s = timerSeconds % 60;
+    el.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timer').style.display = 'none';
+  timerSeconds = 0;
+}
+
+// ═══════════════════════════════════════════════════════
+// SUMMARY
+// ═══════════════════════════════════════════════════════
+function showSummary() {
+  const ui = UI_TEXT[currentLang];
+  document.getElementById('summary-title').textContent = ui.summaryTitle;
+  document.getElementById('summary-meta').textContent =
+    `${personName} · ${personLocation} · ${interviewDate}`;
+
+  const scroll = document.getElementById('summary-scroll');
+  scroll.innerHTML = '';
+
+  QUESTIONS.forEach((q, i) => {
+    const answer = answers[i];
+    const item = document.createElement('div');
+    item.className = 'summary-item';
+
+    const qLabel = q.label[currentLang] || q.label.en;
+    const qText = q.text[currentLang] || q.text.en;
+    const displayAnswer = answer || `<span class="summary-empty">${ui.noAnswer}</span>`;
+
+    item.innerHTML = `
+      <div class="summary-q">Q${i + 1} · ${qLabel}</div>
+      <div class="summary-q-text">${qText}</div>
+      <div class="summary-answer">${answer ? answer.replace(/</g, '&lt;') : `<span class="summary-empty">${ui.noAnswer}</span>`}</div>
+    `;
+    scroll.appendChild(item);
+  });
+
+  showScreen('screen-summary');
+}
+
+// ═══════════════════════════════════════════════════════
+// EXPORT
+// ═══════════════════════════════════════════════════════
+function buildTranscriptText() {
+  const ui = UI_TEXT[currentLang];
+  const lines = [
+    '═══════════════════════════════════════',
+    'JTBD INTERVIEW TRANSCRIPT',
+    '═══════════════════════════════════════',
+    `Person:    ${personName}`,
+    `Location:  ${personLocation}`,
+    `Date:      ${interviewDate}`,
+    `Language:  ${currentLang.toUpperCase()}`,
+    '═══════════════════════════════════════',
+    '',
+  ];
+
+  QUESTIONS.forEach((q, i) => {
+    const qLabel = q.label[currentLang] || q.label.en;
+    const qText = q.text[currentLang] || q.text.en;
+    const answer = answers[i] || ui.noAnswer;
+    lines.push(`Q${i + 1} — ${qLabel.toUpperCase()}`);
+    lines.push(qText);
+    lines.push('');
+    lines.push('ANSWER:');
+    lines.push(answer);
+    lines.push('');
+    lines.push('───────────────────────────────────────');
+    lines.push('');
+  });
+
+  return lines.join('\n');
+}
+
+function downloadTranscript() {
+  const text = buildTranscriptText();
+  const safeName = personName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  const safeDate = new Date().toISOString().slice(0, 10);
+  const filename = `interview_${safeName}_${safeDate}.txt`;
+
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function copyToClipboard() {
+  const text = buildTranscriptText();
+  navigator.clipboard.writeText(text).then(() => {
+    const confirm = document.getElementById('copy-confirm');
+    confirm.textContent = '✓ Copied to clipboard';
+    setTimeout(() => confirm.textContent = '', 2500);
+  }).catch(() => {
+    // Fallback for older browsers
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const confirm = document.getElementById('copy-confirm');
+    confirm.textContent = '✓ Copied';
+    setTimeout(() => confirm.textContent = '', 2500);
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+// RESET
+// ═══════════════════════════════════════════════════════
+function newInterview() {
+  resetInterview();
+  goToIntro();
+}
+
+function resetInterview() {
+  currentQ = 0;
+  answers = new Array(QUESTIONS.length).fill('');
+  personName = '';
+  personLocation = '';
+  if (isRecording) stopRecording();
+  stopTimer();
+  isRecording = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 4000);
+}
+
+// Save transcript on each keystroke
+document.addEventListener('input', e => {
+  if (e.target.id === 'transcript-edit') {
+    answers[currentQ] = e.target.value;
+  }
+});
+
+// Prevent accidental back navigation
+window.addEventListener('beforeunload', e => {
+  if (answers.some(a => a)) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+</script>
+</body>
+</html>
